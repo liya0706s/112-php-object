@@ -26,7 +26,7 @@ class DB
     // 以上，資料庫操作建立建構式
 
 
-    
+
     function all($where = '', $other = '')
     {
         $sql = "select * from `$this->table` ";
@@ -54,6 +54,35 @@ class DB
         }
     }
 
+    // 2023-11-24 count()
+    function count($where = '', $other = '')
+    {
+        $sql = "select * from `$this->table` ";
+
+        if (isset($this->table) && !empty($this->table)) {
+
+            if (is_array($where)) {
+
+                if (!empty($where)) {
+                    foreach ($where as $col => $value) {
+                        $tmp[] = "`$col`='$value'";
+                    }
+                    $sql .= " where " . join(" && ", $tmp);
+                }
+            } else {
+                $sql .= " $where";
+            }
+
+            $sql .= $other;
+            //echo 'all=>'.$sql;
+            $rows = $this->pdo->query($sql)->fetchColumn();
+            return $rows;
+        } else {
+            echo "錯誤:沒有指定的資料表名稱";
+        }
+    }
+
+
     function find($id)
     {
         $sql = "select * from `$this->table` ";
@@ -74,57 +103,72 @@ class DB
     }
 
     // 2023-11-24
-    function save($array){
-        // 判斷是否是存在的id，有代表update,無代表inseert
-        if(isset($array['id'])){
-            $this->update($array[id],$array);
-        }else{
-            $this->insert($array);
+    function save($array)
+    {
+        // 判斷是否是存在的id，有的話代表是update,無代表是inseert
+        if (isset($array['id'])) {
+
+            // update程式碼---commit:修改update的參數以縮減程式碼
+            // $this->update($array['id'],$array);
+            $sql = "update `$this->table` set ";
+
+            if (!empty($cols)) {
+                // cols檢查有無id(有id是update,)
+                foreach ($cols as $col => $value) {
+                    $tmp[] = "`$col`='$value'";
+                }
+            } else {
+                echo "錯誤:缺少要編輯的欄位陣列";
+            }
+
+            $sql .= join(",", $tmp);
+            $sql .= " where `id`='{$array['id']}'";
+        } else {
+            // insert程式碼
+            // $this->insert($array);
+            $sql = "insert into `$this->table` ";
+            $cols = "(`" . join("`,`", array_keys($array)) . "`)";
+            $vals = "('" . join("','", $array) . "')";
+        
+            $sql = $sql . $cols . " values " . $vals;
         }
+        return $this->pdo->exec($sql);
     }
 
     // func變成非公開的
-    protected function update($id, $cols)
-    {
+    // 假設id一定是數字 也不是陣列
+    // protected function update($cols)
+    // {
 
-        $sql = "update `$this->table` set ";
+    //     $sql = "update `$this->table` set ";
 
-        if (!empty($cols)) {
-            foreach ($cols as $col => $value) {
-                $tmp[] = "`$col`='$value'";
-            }
-        } else {
-            echo "錯誤:缺少要編輯的欄位陣列";
-        }
+    //     if (!empty($cols)) {
+    //         // cols檢查有無id(有id是update,)
+    //         foreach ($cols as $col => $value) {
+    //             $tmp[] = "`$col`='$value'";
+    //         }
+    //     } else {
+    //         echo "錯誤:缺少要編輯的欄位陣列";
+    //     }
 
-        $sql .= join(",", $tmp);
-        $tmp = [];
-        if (is_array($id)) {
-            foreach ($id as $col => $value) {
-                $tmp[] = "`$col`='$value'";
-            }
-            $sql .= " where " . join(" && ", $tmp);
-        } else if (is_numeric($id)) {
-            $sql .= " where `id`='$id'";
-        } else {
-            echo "錯誤:參數的資料型態比須是數字或陣列";
-        }
-        // echo $sql;
-        return $this->pdo->exec($sql);
-    }
+    //     $sql .= join(",", $tmp);
+    //     $sql .= " where `id`='{$cols['id']}'";
+    //     // echo $sql;
+    //     return $this->pdo->exec($sql);
+    // }
 
-    protected function insert($values)
-    {
-        $sql = "insert into `$this->table` ";
-        $cols = "(`" . join("`,`", array_keys($values)) . "`)";
-        $vals = "('" . join("','", $values) . "')";
 
-        $sql = $sql . $cols . " values " . $vals;
+    // protected function insert($values)
+    // {
+    //     $sql = "insert into `$this->table` ";
+    //     $cols = "(`" . join("`,`", array_keys($values)) . "`)";
+    //     $vals = "('" . join("','", $values) . "')";
 
-        //echo $sql;
+    //     $sql = $sql . $cols . " values " . $vals;
+    //     //echo $sql;
+    //     return $this->pdo->exec($sql);
+    // }
 
-        return $this->pdo->exec($sql);
-    }
 
     function del($id)
     {
@@ -144,17 +188,26 @@ class DB
 
         return $this->pdo->exec($sql);
     }
+
+    // sql語法
+    function q($sql)
+    {
+        return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 
 function dd($array)
-    {
-        echo "<pre>";
-        print_r($array);
-        echo "</pre>";
-    }
+{
+    echo "<pre>";
+    print_r($array);
+    echo "</pre>";
+}
 
-$student=new DB('students');
-$rows=$student->all('dept=3');
+$student = new DB('students');
+// $rows = $student->q("");
+// q可以執行所有的函式，就是物件
+$rows = $student->count("*");
+
 echo "<pre>";
 print_r($rows);
 echo "</pre>";
