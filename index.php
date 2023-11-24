@@ -12,11 +12,11 @@ class Animal{
         // 把$name指定回等號左邊
         $this->name=$name;
     }
-    
 }
 
 // 實體化 new..
-$animal=new Animal; //實例化 instant
+$animal=new Animal; 
+//實例化 instant
 
 // 輸出目前動物的名稱，注意此時 $animal->name 尚未設定，因此顯示空字串
 echo '顯示名稱:'.$animal->name;
