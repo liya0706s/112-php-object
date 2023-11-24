@@ -73,7 +73,18 @@ class DB
         return $row;
     }
 
-    function update($id, $cols)
+    // 2023-11-24
+    function save($array){
+        // 判斷是否是存在的id，有代表update,無代表inseert
+        if(isset($array['id'])){
+            $this->update($array[id],$array);
+        }else{
+            $this->insert($array);
+        }
+    }
+
+    // func變成非公開的
+    protected function update($id, $cols)
     {
 
         $sql = "update `$this->table` set ";
@@ -102,9 +113,8 @@ class DB
         return $this->pdo->exec($sql);
     }
 
-    function insert($values)
+    protected function insert($values)
     {
-
         $sql = "insert into `$this->table` ";
         $cols = "(`" . join("`,`", array_keys($values)) . "`)";
         $vals = "('" . join("','", $values) . "')";
@@ -144,7 +154,9 @@ function dd($array)
     }
 
 $student=new DB('students');
-$rows=$student->find('25');
+$rows=$student->all('dept=3');
+echo "<pre>";
 print_r($rows);
+echo "</pre>";
 
 ?>
