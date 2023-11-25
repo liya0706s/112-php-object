@@ -6,7 +6,6 @@ session_start();
 class DB
 {
     // 資料庫連接字串，指定主機、編碼和資料庫名稱（需要更改 dbname）
-    // dbname needs to be changed
     protected $dsn = "mysql:host=localhost;charset=utf8;dbname=school";
     // 宣告$pdo不能有運算元
     // 資料庫連接實例
