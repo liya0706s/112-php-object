@@ -5,21 +5,18 @@ session_start();
 // 定義一個 DB 類別
 class DB
 {
-    // 資料庫連接字串，指定主機、編碼和資料庫名稱（需要更改 dbname）
     protected $dsn = "mysql:host=localhost;charset=utf8;dbname=school";
-    // 宣告$pdo不能有運算元
-    // 資料庫連接實例
     protected $pdo;
     protected $table;
 
     // 建構函式，初始化 DB 物件時執行，接收一個資料表名稱參數
     public function __construct($table)
     {
-        // 將傳入的資料表名稱存儲在 $this->table 中
-        $this->table = $table;
+        // 將傳入的資料表名稱存儲在 以上類別的變數table中
+        $this -> table = $table;
 
         // 創建 PDO 連接實例，連接資料庫
-        // $this->dsn讀外面的$dsn
+        // $this->dsn 讀外面的$dsn
         $this->pdo = new PDO($this->dsn, 'root', '');
     }
     // 以上，資料庫操作建立建構式
