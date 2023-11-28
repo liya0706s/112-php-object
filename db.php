@@ -35,9 +35,7 @@ class DB
             if (is_array($where)) {
 
                 if (!empty($where)) {
-                    foreach ($where as $col => $value) {
-                        $tmp[] = "`$col`='$value'";
-                    }
+                    $tmp[] = $this->a2s($where);
                     $sql .= " where " . join(" && ", $tmp);
                 }
             } else {
@@ -56,16 +54,14 @@ class DB
     // 2023-11-24 count()
     function count($where = '', $other = '')
     {
-        $sql = "select * from `$this->table` ";
+        $sql = "select count(*) from `$this->table` ";
 
         if (isset($this->table) && !empty($this->table)) {
 
             if (is_array($where)) {
 
                 if (!empty($where)) {
-                    foreach ($where as $col => $value) {
-                        $tmp[] = "`$col`='$value'";
-                    }
+                    $tmp[] = $this->a2s($where);
                     $sql .= " where " . join(" && ", $tmp);
                 }
             } else {
@@ -87,35 +83,29 @@ class DB
         $sql = "select * from `$this->table` ";
 
         if (is_array($id)) {
-            foreach ($id as $col => $value) {
-                $tmp[] = "`$col`='$value'";
-            }
+            $tmp[] = $this->a2s($id);
             $sql .= " where " . join(" && ", $tmp);
         } else if (is_numeric($id)) {
             $sql .= " where `id`='$id'";
         } else {
-            echo "錯誤:參數的資料型態比須是數字或陣列";
+            echo "錯誤:參數的資料型態必須是數字或陣列";
         }
         //echo 'find=>'.$sql;
         $row = $this->pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
         return $row;
     }
 
-    // 2023-11-24
+    // 2023-11-24 包含新增和更新update, insert
     function save($array)
     {
         // 判斷是否是存在的id，有的話代表是update,無代表是inseert
         if (isset($array['id'])) {
 
             // update程式碼---commit:修改update的參數以縮減程式碼
-            // $this->update($array['id'],$array);
             $sql = "update `$this->table` set ";
 
-            if (!empty($cols)) {
-                // cols檢查有無id(有id是update,)
-                foreach ($cols as $col => $value) {
-                    $tmp[] = "`$col`='$value'";
-                }
+            if (!empty($array)) {
+                $tmp[] = $this->a2s($array);
             } else {
                 echo "錯誤:缺少要編輯的欄位陣列";
             }
@@ -128,7 +118,7 @@ class DB
             $sql = "insert into `$this->table` ";
             $cols = "(`" . join("`,`", array_keys($array)) . "`)";
             $vals = "('" . join("','", $array) . "')";
-        
+
             $sql = $sql . $cols . " values " . $vals;
         }
         return $this->pdo->exec($sql);
@@ -174,9 +164,7 @@ class DB
         $sql = "delete from `$this->table` where ";
 
         if (is_array($id)) {
-            foreach ($id as $col => $value) {
-                $tmp[] = "`$col`='$value'";
-            }
+            $tmp[] = $this->a2s($id);
             $sql .= join(" && ", $tmp);
         } else if (is_numeric($id)) {
             $sql .= " `id`='$id'";
@@ -192,6 +180,14 @@ class DB
     function q($sql)
     {
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    private function a2s($array)
+    {
+        foreach ($array as $col => $value) {
+            $tmp[] = "`$col`='$value'";
+        }
+        return $tmp;
     }
 }
 
@@ -210,5 +206,3 @@ $rows = $student->count("*");
 echo "<pre>";
 print_r($rows);
 echo "</pre>";
-
-?>
