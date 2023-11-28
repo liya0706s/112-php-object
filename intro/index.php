@@ -29,7 +29,6 @@ $animal->setName('小花');
 echo '顯示名稱:'.$animal->name;
 echo "<br>";
 
-$animal->getName('小白');
 $animal->name="小白";
 // 再次輸出動物的名稱，此時應該顯示 '小花'
 echo '顯示名稱:'.$animal->name;
